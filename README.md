@@ -88,7 +88,6 @@ git clone https://github.com/<your-username>/Student#_COMP3123_Assignment1.git
 cd Student#_COMP3123_Assignment1
 ```
 
-*(Replace `Student#` with your actual student number.)*
 
 ### 4.3 Install Dependencies
 
@@ -418,22 +417,3 @@ After running the application and creating users/employees you should see:
 - User documents with **hashed** passwords (never plain text)
 - Employee documents containing a `user` field that matches the owner’s `_id`
 
----
-
-## 15. Submission Checklist
-
-- [x] Source code
-- [x] README.md
-- [x] .env.example
-- [x] .gitignore
-- [x] Postman collection
-- [x] Local logging (`logs/` directory)
-- [x] Health-check endpoint
-- [x] Helmet, rate limiting, validation, JWT, bcrypt
-- [x] Per-user employee ownership enforcement
-
----
-
-## License
-
-This project is submitted for academic purposes as part of COMP 3123.

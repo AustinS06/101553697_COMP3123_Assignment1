@@ -6,7 +6,7 @@ const logger = require('./utils/logger');
 
 const PORT = process.env.PORT || 3000;
 
-// Validate required environment variables
+//Validate required environment variables
 const requiredEnv = ['MONGODB_URI', 'JWT_SECRET'];
 const missing = requiredEnv.filter((key) => !process.env[key]);
 if (missing.length > 0) {
@@ -19,10 +19,10 @@ if (missing.length > 0) {
 
 const startServer = async () => {
   try {
-    // Connect to MongoDB
+    //Connect to MongoDB
     await connectDB();
 
-    // Start listening
+    //Start listening
     app.listen(PORT, () => {
       logger.info(`Server started successfully on port ${PORT}`);
       logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
@@ -35,13 +35,13 @@ const startServer = async () => {
   }
 };
 
-// Handle unhandled promise rejections
+//Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
   logger.error(`Unhandled Rejection: ${err.message}`);
   process.exit(1);
 });
 
-// Handle uncaught exceptions
+//Handle uncaught exceptions
 process.on('uncaughtException', (err) => {
   logger.error(`Uncaught Exception: ${err.message}`);
   process.exit(1);
