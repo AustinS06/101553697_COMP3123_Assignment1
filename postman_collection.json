@@ -1,0 +1,419 @@
+{
+  "info": {
+    "name": "COMP 3123 Assignment 1 - Secure REST API",
+    "description": "Complete test collection for User auth and Employee CRUD with ownership checks.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "tokenB",
+      "value": ""
+    },
+    {
+      "key": "employeeId",
+      "value": ""
+    },
+    {
+      "key": "employeeIdB",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/health"
+      }
+    },
+    {
+      "name": "User",
+      "item": [
+        {
+          "name": "1. Signup - Alice (valid)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"alice\",\n  \"email\": \"alice@example.com\",\n  \"password\": \"Password1\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/user/signup"
+          }
+        },
+        {
+          "name": "2. Signup - Bob (valid)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"bob\",\n  \"email\": \"bob@example.com\",\n  \"password\": \"Password1\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/user/signup"
+          }
+        },
+        {
+          "name": "3. Signup - Duplicate username (409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"alice\",\n  \"email\": \"alice2@example.com\",\n  \"password\": \"Password1\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/user/signup"
+          }
+        },
+        {
+          "name": "4. Signup - Invalid email (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"charlie\",\n  \"email\": \"not-an-email\",\n  \"password\": \"Password1\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/user/signup"
+          }
+        },
+        {
+          "name": "5. Signup - Weak password (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"charlie\",\n  \"email\": \"charlie@example.com\",\n  \"password\": \"weak\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/user/signup"
+          }
+        },
+        {
+          "name": "6. Login - Alice (username)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "if (json.token) {",
+                  "    pm.collectionVariables.set('token', json.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"alice\",\n  \"password\": \"Password1\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/user/login"
+          }
+        },
+        {
+          "name": "7. Login - Bob (email)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.token) {",
+                  "    pm.collectionVariables.set('tokenB', json.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"bob@example.com\",\n  \"password\": \"Password1\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/user/login"
+          }
+        },
+        {
+          "name": "8. Login - Invalid credentials (401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"alice\",\n  \"password\": \"WrongPassword1\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/user/login"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Employee - Alice",
+      "item": [
+        {
+          "name": "9. Create Employee (Alice)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data._id) {",
+                  "    pm.collectionVariables.set('employeeId', json.data._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"email\": \"john.doe@company.com\",\n  \"position\": \"Software Engineer\",\n  \"salary\": 85000,\n  \"date_of_joining\": \"2024-01-15\",\n  \"department\": \"Engineering\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/emp/employees"
+          }
+        },
+        {
+          "name": "10. Create Second Employee (Alice)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Jane\",\n  \"last_name\": \"Smith\",\n  \"email\": \"jane.smith@company.com\",\n  \"position\": \"Product Manager\",\n  \"salary\": 95000,\n  \"date_of_joining\": \"2023-06-01\",\n  \"department\": \"Product\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/emp/employees"
+          }
+        },
+        {
+          "name": "11. Get All Employees (Alice)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/emp/employees"
+          }
+        },
+        {
+          "name": "12. Get Employee by ID (Alice)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/emp/employees/{{employeeId}}"
+          }
+        },
+        {
+          "name": "13. Update Employee (Alice)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"salary\": 90000,\n  \"position\": \"Senior Software Engineer\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/emp/employees/{{employeeId}}"
+          }
+        },
+        {
+          "name": "14. Create Employee - Missing JWT (401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Test\",\n  \"last_name\": \"User\",\n  \"email\": \"test@company.com\",\n  \"position\": \"Intern\",\n  \"salary\": 40000,\n  \"date_of_joining\": \"2024-03-01\",\n  \"department\": \"HR\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/emp/employees"
+          }
+        },
+        {
+          "name": "15. Create Employee - Invalid salary (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Bad\",\n  \"last_name\": \"Salary\",\n  \"email\": \"bad@company.com\",\n  \"position\": \"Tester\",\n  \"salary\": -100,\n  \"date_of_joining\": \"2024-01-01\",\n  \"department\": \"QA\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/emp/employees"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Employee - Bob & Cross-User Tests",
+      "item": [
+        {
+          "name": "16. Create Employee (Bob)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data._id) {",
+                  "    pm.collectionVariables.set('employeeIdB', json.data._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{tokenB}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Bob\",\n  \"last_name\": \"Employee\",\n  \"email\": \"bob.emp@company.com\",\n  \"position\": \"Designer\",\n  \"salary\": 70000,\n  \"date_of_joining\": \"2024-02-01\",\n  \"department\": \"Design\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/emp/employees"
+          }
+        },
+        {
+          "name": "17. Alice tries to GET Bob's employee (must 404)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/emp/employees/{{employeeIdB}}"
+          }
+        },
+        {
+          "name": "18. Alice tries to UPDATE Bob's employee (must 404)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"salary\": 1\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/emp/employees/{{employeeIdB}}"
+          }
+        },
+        {
+          "name": "19. Alice tries to DELETE Bob's employee (must 404)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/emp/employees?eid={{employeeIdB}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "emp", "employees"],
+              "query": [
+                { "key": "eid", "value": "{{employeeIdB}}" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "20. Bob tries to GET Alice's employee (must 404)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{tokenB}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/emp/employees/{{employeeId}}"
+          }
+        },
+        {
+          "name": "21. Delete Employee (Alice - own)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/emp/employees?eid={{employeeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "emp", "employees"],
+              "query": [
+                { "key": "eid", "value": "{{employeeId}}" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
